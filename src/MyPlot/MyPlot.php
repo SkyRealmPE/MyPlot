@@ -492,9 +492,9 @@ class MyPlot extends PluginBase
 		$perms = array_filter($perms, function ($name) {
 			return (substr($name, 0, 18) === "myplot.claimplots.");
 		}, ARRAY_FILTER_USE_KEY);
-		if(count($perms) == 0)
+		if(count($perms) === 0)
 			return 0;
-		krsort($perms);
+		krsort($perms, SORT_FLAG_CASE | SORT_NATURAL);
 		foreach ($perms as $name => $perm) {
 			$maxPlots = substr($name, 18);
 			if(is_numeric($maxPlots)) {
@@ -536,7 +536,7 @@ class MyPlot extends PluginBase
 	 */
 	public function teleportMiddle(Player $player, Plot $plot) : bool {
 		$mid = $this->getPlotMid($plot);
-		if($mid == null) {
+		if($mid === null) {
 			return false;
 		}
 		return $player->teleport($mid);
