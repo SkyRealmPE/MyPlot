@@ -122,9 +122,7 @@ class MyPlot extends PluginBase
 		if(empty($settings)) {
 			$settings = $this->getConfig()->get("DefaultWorld");
 		}
-		$settings = [
-			"preset" => json_encode($settings)
-		];
+		$settings = ["preset" => json_encode($settings)];
 		return $this->getServer()->generateLevel($levelName, null, MyPlotGenerator::class, $settings);
 	}
 
@@ -183,7 +181,7 @@ class MyPlot extends PluginBase
 		if($plotLevel === null)
 			return null;
 
-		$plotSize = $plotLevel->plotSize;
+		$plotSize  = $plotLevel->plotSize;
 		$roadWidth = $plotLevel->roadWidth;
 		$totalSize = $plotSize + $roadWidth;
 
@@ -225,9 +223,9 @@ class MyPlot extends PluginBase
 		$plotSize = $plotLevel->plotSize;
 		$roadWidth = $plotLevel->roadWidth;
 		$totalSize = $plotSize + $roadWidth;
-		$x = $totalSize * $plot->X;
-		$z = $totalSize * $plot->Z;
-		$level = $this->getServer()->getLevelByName($plot->levelName);
+		$x         = $totalSize * $plot->X;
+		$z         = $totalSize * $plot->Z;
+		$level     = $this->getServer()->getLevelByName($plot->levelName);
 		return new Position($x, $plotLevel->groundHeight, $z, $level);
 	}
 
@@ -447,11 +445,11 @@ class MyPlot extends PluginBase
 	 */
 	public function getPlotChunks(Plot $plot) : array {
 		$plotLevel = $this->getLevelSettings($plot->levelName);
-		$level = $this->getServer()->getLevelByName($plot->levelName);
-		$pos = $this->getPlotPosition($plot);
-		$plotSize = $plotLevel->plotSize;
-		$xMax = $pos->x + $plotSize;
-		$zMax = $pos->z + $plotSize;
+		$level     = $this->getServer()->getLevelByName($plot->levelName);
+		$pos       = $this->getPlotPosition($plot);
+		$plotSize  = $plotLevel->plotSize;
+		$xMax      = $pos->x + $plotSize;
+		$zMax      = $pos->z + $plotSize;
 
 		$chunkIndexes = [];
 		for ($x = $pos->x; $x < $xMax; $x++) {
@@ -487,8 +485,7 @@ class MyPlot extends PluginBase
 		if($player->hasPermission("myplot.claimplots.unlimited"))
 			return PHP_INT_MAX;
 		/** @var Permission[] $perms */
-		$perms = array_merge($this->getServer()->getPluginManager()->getDefaultPermissions($player->isOp()),
-			$player->getEffectivePermissions());
+		$perms = array_merge($this->getServer()->getPluginManager()->getDefaultPermissions($player->isOp()), $player->getEffectivePermissions());
 		$perms = array_filter($perms, function ($name) {
 			return (substr($name, 0, 18) === "myplot.claimplots.");
 		}, ARRAY_FILTER_USE_KEY);
@@ -519,8 +516,8 @@ class MyPlot extends PluginBase
 		}
 
 		$plotSize = $plotLevel->plotSize;
-		$pos = $this->getPlotPosition($plot);
-		$pos = new Position($pos->getFloorX() + ($plotSize / 2) + 0.5, $pos->getFloorY() + 1, $pos->getFloorZ() + ($plotSize / 2) + 0.5);
+		$pos      = $this->getPlotPosition($plot);
+		$pos      = new Position($pos->getFloorX() + ($plotSize / 2) + 0.5, $pos->getFloorY() + 1, $pos->getFloorZ() + ($plotSize / 2) + 0.5);
 
 		return $pos;
 	}
@@ -567,7 +564,7 @@ class MyPlot extends PluginBase
 		$cacheSize = $this->getConfig()->get("PlotCacheSize", 256);
 		switch (strtolower($this->getConfig()->get("DataProvider"))) {
 			case "mysql":
-				$settings = $this->getConfig()->get("MySQLSettings");
+				$settings           = $this->getConfig()->get("MySQLSettings");
 				$this->dataProvider = new MySQLProvider($this, $cacheSize, $settings);
 				break;
 			case "yaml":
@@ -677,7 +674,7 @@ class MyPlot extends PluginBase
 	public function unloadLevelSettings(string $levelName) : bool {
 		if(isset($this->levels[$levelName])) {
 			unset($this->levels[$levelName]);
-			$this->getLogger()->debug("Level ".$levelName." settings unloaded!");
+			$this->getLogger()->debug("Level " . $levelName . " settings unloaded!");
 			return true;
 		}
 		return false;
