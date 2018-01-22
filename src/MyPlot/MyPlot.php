@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace MyPlot;
 
 use EssentialsPE\Loader;
+use MyPlot\block\Lava;
+use MyPlot\block\Water;
 use MyPlot\provider\DataProvider;
 use MyPlot\provider\EconomyProvider;
 use MyPlot\provider\EconomySProvider;
@@ -14,6 +16,7 @@ use MyPlot\provider\SQLiteDataProvider;
 use MyPlot\provider\YAMLDataProvider;
 use MyPlot\task\ClearPlotTask;
 use onebone\economyapi\EconomyAPI;
+use pocketmine\block\BlockFactory;
 use pocketmine\entity\Entity;
 use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\lang\BaseLang;
@@ -34,6 +37,8 @@ use spoondetector\SpoonDetector;
 
 class MyPlot extends PluginBase
 {
+	/** @var MyPlot $instance */
+	private static $instance;
 	/** @var PlotLevelSettings[] $levels */
 	private $levels = [];
 
@@ -48,6 +53,13 @@ class MyPlot extends PluginBase
 
 	/** @var array[] $particles */
 	private $particles = [];
+
+	/**
+	 * @return MyPlot
+	 */
+	public static function getInstance() : self {
+		return self::$instance;
+	}
 
 	/**
 	 * Returns the Multi-lang management class
@@ -543,6 +555,7 @@ class MyPlot extends PluginBase
 
 	public function onLoad() : void {
 		$this->getLogger()->notice(TF::BOLD."Loading...");
+		self::$instance = $this;
 		$this->getLogger()->debug(TF::BOLD."Loading Config");
 		$this->saveDefaultConfig();
 		$this->reloadConfig();
@@ -626,6 +639,10 @@ class MyPlot extends PluginBase
 			$eventListener->onLevelLoad(new LevelLoadEvent($level));
 		}
 		$this->getLogger()->debug(TF::BOLD."Loading Particles");
+		BlockFactory::registerBlock(new Water(), true);
+		BlockFactory::registerBlock(new Lava(), true);
+		$this->getLogger()->debug(TF::BOLD . "Registering Blocks");
+
 		/** @var array[] $particles */
 		$particles = (new Config($this->getDataFolder()."particles.json", Config::JSON, []))->getAll();
 		foreach($particles as $plotId => $particleArray) {
