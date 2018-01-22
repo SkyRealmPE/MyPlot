@@ -40,11 +40,6 @@ class MySQLProvider extends DataProvider
 		$this->db->query(
 			"CREATE TABLE IF NOT EXISTS plots (id INT PRIMARY KEY AUTO_INCREMENT, level TEXT, X INT, Z INT, name TEXT, owner TEXT, helpers TEXT, denied TEXT, biome TEXT);"
 		);
-		try {
-			$this->db->query("ALTER TABLE plots ADD done BOOL;");
-		}catch(\ErrorException $e) {
-			//do nothing
-		}
 		$this->prepare();
 		$this->plugin->getLogger()->debug("MySQL data provider registered");
 	}
@@ -61,10 +56,10 @@ class MySQLProvider extends DataProvider
 
 		if($plot->id >= 0) {
 			$stmt = $this->sqlSavePlotById;
-			$stmt->bind_param('isiisssssi', $plot->id, $plot->levelName, $plot->X, $plot->Z, $plot->name, $plot->owner, $helpers, $denied, $plot->biome, $plot->done);
+			$stmt->bind_param('isiisssss', $plot->id, $plot->levelName, $plot->X, $plot->Z, $plot->name, $plot->owner, $helpers, $denied, $plot->biome);
 		} else{
 			$stmt = $this->sqlSavePlot;
-			$stmt->bind_param('siisiisssssi', $plot->levelName, $plot->X, $plot->Z, $plot->levelName, $plot->X, $plot->Z, $plot->name, $plot->owner, $helpers, $denied, $plot->biome, $plot->done);
+			$stmt->bind_param('siisiisssss', $plot->levelName, $plot->X, $plot->Z, $plot->levelName, $plot->X, $plot->Z, $plot->name, $plot->owner, $helpers, $denied, $plot->biome);
 		}
 		$result = $stmt->execute();
 
@@ -133,8 +128,7 @@ class MySQLProvider extends DataProvider
 			} else{
 				$denied = explode(",", (string)$val["denied"]);
 			}
-			$plot = new Plot($levelName, $X, $Z, (string)$val["name"], (string)$val["owner"],
-				$helpers, $denied, (string)$val["biome"], (bool)$val["done"], (int)$val["id"]);
+			$plot = new Plot($levelName, $X, $Z, (string)$val["name"], (string)$val["owner"], $helpers, $denied, (string) $val["biome"], (int) $val["id"]);
 		} else{
 			$plot = new Plot($levelName, $X, $Z);
 		}
@@ -168,8 +162,7 @@ class MySQLProvider extends DataProvider
 		while($val = $result->fetch_array()) {
 			$helpers = explode(",", (string)$val["helpers"]);
 			$denied = explode(",", (string)$val["denied"]);
-			$plots[] = new Plot((string)$val["level"], (int)$val["X"], (int)$val["Z"], (string)$val["name"],
-				(string)$val["owner"], $helpers, $denied, (string)$val["biome"], (bool)$val["done"], (int)$val["id"]);
+			$plots[] = new Plot((string)$val["level"], (int)$val["X"], (int)$val["Z"], (string)$val["name"], (string) $val["owner"], $helpers, $denied, (string) $val["biome"], (int) $val["id"]);
 		}
 		// Remove unloaded plots
 		$plots = array_filter($plots, function($plot) {
@@ -251,7 +244,7 @@ class MySQLProvider extends DataProvider
 				return true;
 			}else{
 				$this->plugin->getLogger()->critical("The MySQL connection could not be re-established!");
-				$this->plugin->getLogger()->critical("Closing level to prevent griefing!");  //TODO: Is this necessary? The cache should still work
+				$this->plugin->getLogger()->critical("Closing level to prevent griefing!");
 				foreach($this->plugin->getPlotLevels() as $levelName => $settings) {
 					$level = $this->plugin->getServer()->getLevelByName($levelName);
 					$level->save(); // don't force in case owner doesn't want it saved
@@ -267,14 +260,11 @@ class MySQLProvider extends DataProvider
 	}
 	
 	private function prepare() : void {
-		$this->sqlGetPlot = $this->db->prepare(
-			"SELECT id, name, owner, helpers, denied, biome, done FROM plots WHERE level = ? AND X = ? AND Z = ?;"
+		$this->sqlGetPlot = $this->db->prepare("SELECT id, name, owner, helpers, denied, biome FROM plots WHERE level = ? AND X = ? AND Z = ?;"
 		);
-		$this->sqlSavePlot = $this->db->prepare(
-			"INSERT INTO plots (`id`, `level`, `X`, `Z`, `name`, `owner`, `helpers`, `denied`, `biome`, `done`) VALUES((SELECT id	FROM plots p WHERE p.level = ? AND X = ? AND Z = ?),?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE name = VALUES(name), owner = VALUES(owner), helpers = VALUES(helpers), denied = VALUES(denied), biome = VALUES(biome), done = VALUES(done);"
+		$this->sqlSavePlot = $this->db->prepare("INSERT INTO plots (`id`, `level`, `X`, `Z`, `name`, `owner`, `helpers`, `denied`, `biome`) VALUES((SELECT id FROM plots p WHERE p.level = ? AND X = ? AND Z = ?),?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE name = VALUES(name), owner = VALUES(owner), helpers = VALUES(helpers), denied = VALUES(denied), biome = VALUES(biome);"
 		);
-		$this->sqlSavePlotById = $this->db->prepare(
-			"UPDATE plots SET id = ?, level = ?, X = ?, Z = ?, name = ?, owner = ?, helpers = ?, denied = ?, biome = ?, done = ? WHERE id = VALUES(id);"
+		$this->sqlSavePlotById = $this->db->prepare("UPDATE plots SET id = ?, level = ?, X = ?, Z = ?, name = ?, owner = ?, helpers = ?, denied = ?, biome = ? WHERE id = VALUES(id);"
 		);
 		$this->sqlRemovePlot = $this->db->prepare(
 			"DELETE FROM plots WHERE id = ?;"

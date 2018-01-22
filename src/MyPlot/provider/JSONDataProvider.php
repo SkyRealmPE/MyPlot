@@ -4,7 +4,6 @@ namespace MyPlot\provider;
 
 use MyPlot\MyPlot;
 use MyPlot\Plot;
-
 use pocketmine\utils\Config;
 
 class JSONDataProvider extends DataProvider
@@ -42,9 +41,7 @@ class JSONDataProvider extends DataProvider
 			"name" => $plot->name,
 			"owner" => $plot->owner,
 			"helpers" => $plot->helpers,
-			"denied" => $plot->denied,
-			"biome" => $plot->biome,
-			"done" => $plot->done
+			"denied" => $plot->denied, "biome" => $plot->biome
 		];
 		$this->json->set("plots", $plots);
 		$this->cachePlot($plot);
@@ -95,14 +92,13 @@ class JSONDataProvider extends DataProvider
 			$helpers = $plots[$key]["helpers"] == [] ? [] : $plots[$key]["helpers"];
 			$denied = $plots[$key]["denied"] == [] ? [] : $plots[$key]["denied"];
 			$biome = strtoupper($plots[$key]["biome"]) == "PLAINS" ? "PLAINS" : strtoupper($plots[$key]["biome"]);
-			$done = (bool)$plots[$key]["done"];
 
-			return new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $done, $key);
+			return new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $key);
 		}
 		$count = $this->json->get("count", 0);
 		$this->json->set("count", (int)$count++);
 		$this->json->save(true);
-		return new Plot($levelName, $X, $Z, "", "", [], [], "PLAINS", false, (int)$count);
+		return new Plot($levelName, $X, $Z, "", "", [], [], "PLAINS", (int) $count);
 	}
 
 	/**
@@ -126,9 +122,8 @@ class JSONDataProvider extends DataProvider
 						$helpers = $plots[$levelKey]["helpers"] == [] ? [] : $plots[$levelKey]["helpers"];
 						$denied = $plots[$levelKey]["denied"] == [] ? [] : $plots[$levelKey]["denied"];
 						$biome = strtoupper($plots[$levelKey]["biome"]) == "PLAINS" ? "PLAINS" : strtoupper($plots[$levelKey]["biome"]);
-						$done = (bool)$plots[$levelKey]["done"];
 
-						$ownerPlots[] = new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $done, $levelKey);
+						$ownerPlots[] = new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $levelKey);
 					}
 				}
 			}
@@ -143,9 +138,8 @@ class JSONDataProvider extends DataProvider
 				$helpers = $plots[$key]["helpers"] == [] ? [] : $plots[$key]["helpers"];
 				$denied = $plots[$key]["denied"] == [] ? [] : $plots[$key]["denied"];
 				$biome = strtoupper($plots[$key]["biome"]) == "PLAINS" ? "PLAINS" : strtoupper($plots[$key]["biome"]);
-				$done = (bool)$plots[$key]["done"];
 
-				$ownerPlots[] = new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $done, $key);
+				$ownerPlots[] = new Plot($levelName, $X, $Z, $plotName, $owner, $helpers, $denied, $biome, $key);
 			}
 		}
 		return $ownerPlots;

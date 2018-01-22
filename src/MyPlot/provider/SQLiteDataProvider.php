@@ -30,20 +30,11 @@ class SQLiteDataProvider extends DataProvider
 			(id INTEGER PRIMARY KEY AUTOINCREMENT, level TEXT, X INTEGER, Z INTEGER, name TEXT,
 			 owner TEXT, helpers TEXT, denied TEXT, biome TEXT);"
 		);
-		try{
-			$this->db->exec(
-				"ALTER TABLE plots ADD COLUMN done INTEGER;"
-			);
-		}catch(\ErrorException $e) {
-			//do nothing
-		}
-		$this->sqlGetPlot = $this->db->prepare(
-			"SELECT id, name, owner, helpers, denied, biome, done FROM plots WHERE level = :level AND X = :X AND Z = :Z;"
+		$this->sqlGetPlot = $this->db->prepare("SELECT id, name, owner, helpers, denied, biome FROM plots WHERE level = :level AND X = :X AND Z = :Z;"
 		);
-		$this->sqlSavePlot = $this->db->prepare(
-			"INSERT OR REPLACE INTO plots (id, level, X, Z, name, owner, helpers, denied, biome, done) VALUES
+		$this->sqlSavePlot = $this->db->prepare("INSERT OR REPLACE INTO plots (id, level, X, Z, name, owner, helpers, denied, biome) VALUES
 			((select id from plots where level = :level AND X = :X AND Z = :Z),
-			 :level, :X, :Z, :name, :owner, :helpers, :denied, :biome, :done);"
+			 :level, :X, :Z, :name, :owner, :helpers, :denied, :biome);"
 		);
 		$this->sqlSavePlotById = $this->db->prepare(
 			"UPDATE plots SET name = :name, owner = :owner, helpers = :helpers, denied = :denied, biome = :biome WHERE id = :id;"
@@ -90,7 +81,6 @@ class SQLiteDataProvider extends DataProvider
 		$stmt->bindValue(":helpers", $helpers, SQLITE3_TEXT);
 		$stmt->bindValue(":denied", $denied, SQLITE3_TEXT);
 		$stmt->bindValue(":biome", $plot->biome, SQLITE3_TEXT);
-		$stmt->bindValue(":done", $plot->done, SQLITE3_INTEGER);
 		$stmt->reset();
 		$result = $stmt->execute();
 		if ($result === false) {
@@ -152,8 +142,7 @@ class SQLiteDataProvider extends DataProvider
 			} else {
 				$denied = explode(",", (string)$val["denied"]);
 			}
-			$plot = new Plot($levelName, $X, $Z, (string)$val["name"], (string)$val["owner"],
-				$helpers, $denied, (string)$val["biome"], (bool)$val["done"], (int)$val["id"]);
+			$plot = new Plot($levelName, $X, $Z, (string)$val["name"], (string)$val["owner"], $helpers, $denied, (string) $val["biome"], (int) $val["id"]);
 		} else {
 			$plot = new Plot($levelName, $X, $Z);
 		}
@@ -181,8 +170,7 @@ class SQLiteDataProvider extends DataProvider
 		while ($val = $result->fetchArray(SQLITE3_ASSOC)) {
 			$helpers = explode(",", (string)$val["helpers"]);
 			$denied = explode(",", (string)$val["denied"]);
-			$plots[] = new Plot((string)$val["level"], (int)$val["X"], (int)$val["Z"], (string)$val["name"],
-				(string)$val["owner"], $helpers, $denied, (string)$val["biome"], (bool)$val["done"], (int)$val["id"]);
+			$plots[] = new Plot((string)$val["level"], (int)$val["X"], (int)$val["Z"], (string)$val["name"], (string) $val["owner"], $helpers, $denied, (string) $val["biome"], (int) $val["id"]);
 		}
 
 

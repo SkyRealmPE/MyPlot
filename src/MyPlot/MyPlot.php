@@ -17,20 +17,17 @@ use MyPlot\provider\YAMLDataProvider;
 use MyPlot\task\ClearPlotTask;
 use onebone\economyapi\EconomyAPI;
 use pocketmine\block\BlockFactory;
-use pocketmine\entity\Entity;
 use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\lang\BaseLang;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\Level;
-use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\permission\Permission;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as TF;
 use PocketMoney\PocketMoney;
 use spoondetector\SpoonDetector;
@@ -50,9 +47,6 @@ class MyPlot extends PluginBase
 
 	/** @var BaseLang $baseLang */
 	private $baseLang = null;
-
-	/** @var array[] $particles */
-	private $particles = [];
 
 	/**
 	 * @return MyPlot
@@ -377,66 +371,6 @@ class MyPlot extends PluginBase
 	}
 
 	/**
-	 * Changes the completed state of the plot
-	 *
-	 * @api
-	 * @param Plot $plot
-	 * @param bool $done
-	 *
-	 * @return bool
-	 */
-	public function setPlotDone(Plot $plot, bool $done = true) : bool {
-		$plot->done = $done;
-		$this->savePlot($plot);
-		$plotLevel = $this->getLevelSettings($plot->levelName);
-		if($plotLevel === null) {
-			return false;
-		}
-		if($plotLevel->displayDoneNametags) {
-			$level = $this->getServer()->getLevelByName($plot->levelName);
-			if($level === null)
-				return false;
-			if($done) {
-				$bb = $this->getPlotBB($plot);
-
-				$level->addParticle(($particle = new FloatingTextParticle(new Position($bb->minX, $plotLevel->groundHeight + 3, $bb->maxZ, $level), "", "Completed")));
-				$this->particles[$plot->id][$i = 0][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				/** @noinspection PhpParamsInspection */
-				$level->addParticle($particle->setComponents($bb->minX, $plotLevel->groundHeight + 3, $bb->maxZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				/** @noinspection PhpParamsInspection */
-				$level->addParticle($particle->setComponents($bb->maxX, $plotLevel->groundHeight + 3, $bb->minZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				/** @noinspection PhpParamsInspection */
-				$level->addParticle($particle->setComponents($bb->maxX, $plotLevel->groundHeight + 3, $bb->maxZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-			}else{
-				$entity = $level->getEntity($this->particles[$plot->id][0][0]);
-				if($entity !== null)
-					$entity->flagForDespawn();
-				$entity = $level->getEntity($this->particles[$plot->id][1][0]);
-				if($entity !== null)
-					$entity->flagForDespawn();
-				$entity = $level->getEntity($this->particles[$plot->id][2][0]);
-				if($entity !== null)
-					$entity->flagForDespawn();
-				$entity = $level->getEntity($this->particles[$plot->id][3][0]);
-				if($entity !== null)
-					$entity->flagForDespawn();
-				unset($this->particles[$plot->id]);
-			}
-			//TODO: what if plots are already marked before the setting is disabled?
-		}else{
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Returns the PlotLevelSettings of all the loaded levels
 	 *
 	 * @api
@@ -562,7 +496,6 @@ class MyPlot extends PluginBase
 		@mkdir($this->getDataFolder()."worlds");
 
 		$this->getLogger()->debug(TF::BOLD."Loading MyPlot Generator");
-		// Register world generator
 		Generator::addGenerator(MyPlotGenerator::class, "myplot");
 
 		$this->getLogger()->debug(TF::BOLD."Loading Languages");
@@ -642,33 +575,6 @@ class MyPlot extends PluginBase
 		BlockFactory::registerBlock(new Water(), true);
 		BlockFactory::registerBlock(new Lava(), true);
 		$this->getLogger()->debug(TF::BOLD . "Registering Blocks");
-
-		/** @var array[] $particles */
-		$particles = (new Config($this->getDataFolder()."particles.json", Config::JSON, []))->getAll();
-		foreach($particles as $plotId => $particleArray) {
-			$pos = explode(";", $particleArray[1]);
-			$plotLevel = $this->getLevelSettings($pos[3]);
-			if($plotLevel->displayDoneNametags) {
-				$level = $this->getServer()->getLevelByName($pos[3]);
-				if($level === null)
-					return;
-				$plot = $this->getPlotByPosition(new Position($pos[0], $pos[1], $pos[2], $level));
-				$bb = $this->getPlotBB($plot);
-
-				$level->addParticle(($particle = new FloatingTextParticle(new Position($bb->minX, $plotLevel->groundHeight + 3, $bb->maxZ, $level), "", "Completed")));
-				$this->particles[$plot->id][$i = 0][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				$level->addParticle($particle->setComponents($bb->minX, $plotLevel->groundHeight + 3, $bb->maxZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				$level->addParticle($particle->setComponents($bb->maxX, $plotLevel->groundHeight + 3, $bb->minZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-				$level->addParticle($particle->setComponents($bb->maxX, $plotLevel->groundHeight + 3, $bb->maxZ));
-				$this->particles[$plot->id][$i++][0] = Entity::$entityCount;
-				$this->particles[$plot->id][$i][1] = $particle->x.";".$particle->y.";".$particle->z.";".$level->getFolderName();
-			}
-		}
 		$this->getLogger()->notice(TF::BOLD.TF::GREEN."Enabled!");
 	}
 
@@ -700,8 +606,5 @@ class MyPlot extends PluginBase
 	public function onDisable() : void {
 		if($this->dataProvider !== null)
 			$this->dataProvider->close();
-		$particles = new Config($this->getDataFolder()."particles.json", Config::JSON, []);
-		$particles->setAll($this->particles);
-		$particles->save();
 	}
 }

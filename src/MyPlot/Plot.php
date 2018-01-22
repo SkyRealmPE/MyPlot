@@ -4,7 +4,7 @@ namespace MyPlot;
 
 class Plot
 {
-	public $levelName = "", $X = -0, $Z = -0, $name = "", $owner = "", $helpers = [], $denied = [], $biome = "PLAINS", $done = false, $id = -1;
+	public $levelName = "", $X = -0, $Z = -0, $name = "", $owner = "", $helpers = [], $denied = [], $biome = "PLAINS", $id = -1;
 
 	/**
 	 * Plot constructor.
@@ -17,10 +17,9 @@ class Plot
 	 * @param array $helpers
 	 * @param array $denied
 	 * @param string $biome
-	 * @param bool $done
 	 * @param int $id
 	 */
-	public function __construct(string $levelName, int $X, int $Z, string $name = "", string $owner = "", array $helpers = [], array $denied = [], string $biome = "PLAINS", bool $done = false, int $id = -1) {
+	public function __construct(string $levelName, int $X, int $Z, string $name = "", string $owner = "", array $helpers = [], array $denied = [], string $biome = "PLAINS", int $id = -1) {
 		$this->levelName = $levelName;
 		$this->X = $X;
 		$this->Z = $Z;
@@ -29,7 +28,6 @@ class Plot
 		$this->helpers = $helpers;
 		$this->denied = $denied;
 		$this->biome = strtoupper($biome);
-		$this->done = $done;
 		$this->id = $id;
 	}
 
@@ -117,15 +115,6 @@ class Plot
 		}
 		unset($this->denied[$key]);
 		return true;
-	}
-
-	/**
-	 * @api
-	 *
-	 * @return bool
-	 */
-	public function isDone() {
-		return $this->done;
 	}
 
 	/**
