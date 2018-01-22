@@ -46,14 +46,12 @@ class ClearPlotTask extends PluginTask {
 	 */
 	public function onRun(int $currentTick) : void {
 		foreach($this->level->getEntities() as $entity) {
-			if(($plot = $this->plugin->getPlotByPosition($entity)) != null) {
-				if($plot->X === $this->plotBeginPos->x and $plot->Z === $this->plotBeginPos->z) {
-					if(!$entity instanceof Player) {
-						$entity->close();
-					}
-					else {
-						$this->plugin->teleportPlayerToPlot($entity, $plot);
-					}
+			if($this->plugin->getPlotBB($this->plot)->isVectorInXZ($entity)) {
+				if(!$entity instanceof Player) {
+					$entity->close();
+				}
+				else {
+					$this->plugin->teleportPlayerToPlot($entity, $this->plot);
 				}
 			}
 		}
@@ -75,7 +73,7 @@ class ClearPlotTask extends PluginTask {
 					}
 					$this->level->setBlock($this->pos, $block, false, false);
 					$blocks++;
-					if($blocks === $this->maxBlocksPerTick) {
+					if($blocks >= $this->maxBlocksPerTick) {
 						$this->getOwner()->getServer()->getScheduler()->scheduleDelayedTask($this, 1);
 						return;
 					}
