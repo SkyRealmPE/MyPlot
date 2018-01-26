@@ -1,6 +1,7 @@
 # MyPlot
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/EjgedSY)
 [![Poggit-Ci](https://poggit.pmmp.io/ci.shield/jasonwynn10/MyPlot/MyPlot)](https://poggit.pmmp.io/ci/jasonwynn10/MyPlot/MyPlot)
+[![Download count](https://poggit.pmmp.io/shield.dl.total/MyPlot)](https://poggit.pmmp.io/p/MyPlot)
 ### **Create, manage, and build in protected plots. Keep your builds safe from griefers!**
 
 #### Please note that the [API3 Branch](https://github.com/jasonwynn10/MyPlot/tree/API3) is actively under development for the new changes in PocketMine 3.0.0 and may not work all the time. The [master branch](https://github.com/jasonwynn10/MyPlot/tree/master) is for compatability with 0.16 clients.
